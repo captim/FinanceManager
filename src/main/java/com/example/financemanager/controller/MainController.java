@@ -1,26 +1,31 @@
 package com.example.financemanager.controller;
 
-import com.example.financemanager.model.repositories.UserRepository;
+import com.example.financemanager.model.entities.User;
+import com.example.financemanager.service.api.UserService;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.nio.file.AccessDeniedException;
 
 @RestController
 public class MainController {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
 
-    public MainController(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public MainController(UserService userService) {
+        this.userService = userService;
     }
 
-
-    @GetMapping("/")
-    public String index() {
-        StringBuilder output = new StringBuilder("Hello World!!!\n");
-        return output.toString();
+    @GetMapping("/api/checkAccess")
+    @ResponseBody
+    public User index() throws AccessDeniedException {
+        return userService.getCurrentUser().orElseThrow(() -> new AccessDeniedException("User not found"));
     }
+
     @GetMapping("/welcome")
     public String welcome() {
+
         return "Welcome to Finance Manager!";
     }
 }

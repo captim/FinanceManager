@@ -17,11 +17,15 @@ public class SpendingRecord {
 
     @ManyToOne
     @JoinColumn(name = "income_category_id")
-    private IncomeCategory incomeCategory;
+    private Account incomeCategory;
 
     @ManyToOne
     @JoinColumn(name = "outcome_category_id")
     private OutcomeCategory outcomeCategory;
+
+    @ManyToOne
+    @JoinColumn(name = "account_id")
+    private Account account;
 
     @Column(name = "date")
     private Date date;

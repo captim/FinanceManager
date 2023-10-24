@@ -7,8 +7,8 @@ import {
     DialogContent,
     DialogSurface,
     DialogTitle,
-    DialogTrigger, Input, Label, Link, Select,
-    Text, Toast, Toaster, ToastTitle, useId, useToastController
+    DialogTrigger, Input, Label, Select,
+    Toast, Toaster, ToastTitle, useId, useToastController
 } from "@fluentui/react-components";
 import {Add24Regular} from "@fluentui/react-icons/lib/fonts";
 import {addNewEntityDialogStyles} from "./addNewEntityDialogStyles";
@@ -30,7 +30,7 @@ interface AddNewEntityDialogProps {
     open: boolean;
     onOpenChange: DialogOpenChangeEventHandler;
     entity: Entity;
-    onEntityCreated?: () => void;
+    onSuccess?: () => void;
 }
 const getTypeOfInputByType = (type: string) => {
     switch (type) {
@@ -50,7 +50,7 @@ const getTypeOfInputByType = (type: string) => {
 }
 
 
-export default function AddNewEntityDialog({open, onOpenChange, entity, onEntityCreated}: AddNewEntityDialogProps) {
+export default function AddNewEntityDialog({open, onOpenChange, entity, onSuccess}: AddNewEntityDialogProps) {
 
     const toasterId = useId("toaster");
     const {dispatchToast} = useToastController(toasterId);
@@ -112,9 +112,8 @@ export default function AddNewEntityDialog({open, onOpenChange, entity, onEntity
         }).then(response => {
             if (!response.ok) {
                 showErrorToast("Server error");
-            }
-            if (onEntityCreated) {
-                onEntityCreated();
+            } else {
+                onSuccess && onSuccess();
             }
         });
     }

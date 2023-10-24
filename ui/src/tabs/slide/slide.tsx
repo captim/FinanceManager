@@ -1,5 +1,5 @@
 import React from 'react';
-import {slideStyles} from "../slideStyles";
+import {slideStyles} from "./slideStyles";
 import {Text} from "@fluentui/react-components";
 
 interface SlideProps {
@@ -16,7 +16,9 @@ export default function Slide({title, children}: SlideProps) {
                     {title}
                 </Text>
             </div>
-            {children}
+            <div className={classes.slideContent}>
+                {children}
+            </div>
         </div>
     );
 }

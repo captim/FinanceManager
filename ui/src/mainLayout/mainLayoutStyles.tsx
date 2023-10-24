@@ -11,7 +11,7 @@ export const mainLayoutStyles = makeStyles({
     rootWidget: {
         backgroundColor: tokens.colorNeutralBackground1,
         boxShadow: tokens.shadow16,
-        ...shorthands.borderRadius('10px'),
+        ...shorthands.borderRadius(tokens.borderRadiusXLarge),
         position: 'absolute',
         top: '50%',
         left: '50%',

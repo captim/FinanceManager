@@ -1,6 +1,10 @@
 import {makeStyles, shorthands} from "@fluentui/react-components";
 import { tokens } from '@fluentui/react-theme';
 
+export const TABS_HEIGHT = '800px';
+export const TABS_WIDTH = '1050px';
+const FULL_WIDGET_WIDTH = '1400px';
+
 export const mainLayoutStyles = makeStyles({
     rootBackground: {
         backgroundImage: 'url("../../background/background.jpg")',
@@ -16,8 +20,8 @@ export const mainLayoutStyles = makeStyles({
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: '1400px',
-        height: '800px',
+        width: FULL_WIDGET_WIDTH,
+        height: TABS_HEIGHT,
         ...shorthands.overflow('hidden'),
         display: 'flex'
     },

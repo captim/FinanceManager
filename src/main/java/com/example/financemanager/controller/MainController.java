@@ -20,7 +20,7 @@ public class MainController {
     @GetMapping("/api/checkAccess")
     @ResponseBody
     public User index() throws AccessDeniedException {
-        return userService.getCurrentUser().orElseThrow(() -> new AccessDeniedException("User not found"));
+        return userService.getCurrentUserForStorage();
     }
 
     @GetMapping("/welcome")

@@ -38,4 +38,13 @@ public class UserServiceImpl implements UserService {
         String login = ((OAuth2AuthenticationToken) SecurityContextHolder.getContext().getAuthentication()).getPrincipal().getAttribute("login");
         return userRepository.findByLogin(login);
     }
+
+    @Override
+    public User getCurrentUserForStorage() throws AccessDeniedException {
+        User user = getCurrentUser().orElseThrow(() -> new AccessDeniedException("User not found"));
+        user.setIncomeCategories(null);
+        user.setOutcomeCategories(null);
+        user.setAccounts(null);
+        return user;
+    }
 }

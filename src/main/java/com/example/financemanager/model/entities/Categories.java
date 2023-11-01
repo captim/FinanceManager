@@ -16,14 +16,8 @@ public class Categories {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "is_archived")
-    private boolean archived;
+    @Column(name = "icon")
+    @Enumerated(EnumType.STRING)
+    private Icon icon;
 
-    public boolean isArchived() {
-        return archived;
-    }
-
-    public void setArchived(boolean archived) {
-        this.archived = archived;
-    }
 }

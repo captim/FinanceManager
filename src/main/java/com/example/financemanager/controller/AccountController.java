@@ -26,4 +26,18 @@ public class AccountController {
     public ResponseEntity<?> getAccounts() {
         return ResponseEntity.ok(accountService.getAccountsByCurrentUser());
     }
+
+    @DeleteMapping(value="/api/account/{id}")
+    @ResponseBody
+    public ResponseEntity<?> deleteAccount(@PathVariable("id") Long id) {
+        accountService.deleteAccount(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping(value="/api/account", consumes="application/json")
+    @ResponseBody
+    public ResponseEntity<?> updateAccount(@RequestBody Account account) {
+        accountService.updateAccount(account);
+        return ResponseEntity.ok().build();
+    }
 }

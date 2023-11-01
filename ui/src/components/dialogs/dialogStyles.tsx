@@ -1,6 +1,6 @@
 import {makeStyles, shorthands} from "@fluentui/react-components";
 
-export const addNewEntityDialogStyles = makeStyles({
+export const dialogStyles = makeStyles({
     dialog: {
         width: '600px',
     },

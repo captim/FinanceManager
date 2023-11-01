@@ -7,4 +7,6 @@ import java.util.List;
 public interface AccountService {
     void addAccountToCurrentUser(Account account);
     List<Account> getAccountsByCurrentUser();
+    void deleteAccount(Long id);
+    void updateAccount(Account account);
 }

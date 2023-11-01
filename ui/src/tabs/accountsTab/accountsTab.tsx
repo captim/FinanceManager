@@ -1,126 +1,83 @@
 import React from 'react';
-import {
-    Button, createTableColumn,
-    Table,
-    TableBody,
-    TableCell, TableColumnDefinition, TableColumnId,
-    TableHeader, TableHeaderCell,
-    TableRow,
-    useRestoreFocusTarget, useTableFeatures, useTableSort
-} from "@fluentui/react-components";
-import {Add24Regular} from "@fluentui/react-icons";
-import AddNewEntityDialog from "../../dialogs/addNewEntityDialog";
+import {Button, useRestoreFocusTarget,} from "@fluentui/react-components";
+import {Add24Regular, Edit24Filled, ArrowDownload24Filled, ArrowExportUp24Filled, Delete24Filled} from "@fluentui/react-icons";
+import AddNewEntityDialog from "../../components/dialogs/addNewEntityDialog/addNewEntityDialog";
 import {accountTabStyles} from "./accountTabStyles";
-import {getAllAccounts} from "../../services/accountService";
-export interface Account {
-    id: number;
-    name: string;
-    currency: string;
-    personalMoney: number;
-    creditLimit: number | null;
+import {deleteAccount, getAllAccounts} from "../../services/accountService";
+import {Account, entityAccountDefinition} from "../../entityDescriptions/accountEntityDescription";
+import {CustomTable, CustomTableAction} from "../../components/tables/customTable";
+import {accountRowsDefinition} from "../../components/tables/rowsDefinition/accountRowsDefinition";
+import EditEntityDialog from "../../components/dialogs/editEntityDialog/editEntityDialog";
+
+interface AccountsTabProps {
+    sendGlobalToast: (message: string, intent: string) => void;
 }
 
-export default function AccountsTab() {
+export default function AccountsTab({sendGlobalToast}: AccountsTabProps) {
     const [addDialogOpen, setAddDialogOpen] = React.useState(false);
+    const [editDialogOpen, setEditDialogOpen] = React.useState(false);
+    const [accountForEdit, setAccountForEdit] = React.useState<Account>();
     const [accounts, setAccounts] = React.useState<Account[]>([]);
     const restoreFocusTargetAttribute = useRestoreFocusTarget();
+
     const onClickAddAccount = () => {
         setAddDialogOpen(true);
     }
-    const classes = accountTabStyles();
-    const getTotalBalance = (account: Account) => {
-        return account.personalMoney + (account.creditLimit || 0);
+
+    const onOpenAddDialogChange = (event: React.MouseEvent | React.KeyboardEvent | MouseEvent, data: { open: boolean }) => {
+        setAddDialogOpen(data.open);
     }
-    const entityAccount = {
-        name: "Account",
-        properties: [
-            {
-                displayedName: "Name",
-                name: "name",
-                type: "string",
-                required: true,
-                defaultValue: "",
-            },
-            {
-                displayedName: "Currency",
-                name: "currency",
-                type: "options",
-                required: true,
-                defaultValue: "",
-                options: ["EUR", "USD", "HRN"]
-            },
-            {
-                displayedName: "Personal money",
-                name: "personalMoney",
-                type: "float",
-                required: true,
-                defaultValue: "",
-            },
-            {
-                displayedName: "Credit limit",
-                name: "creditLimit",
-                type: "float",
-                required: false,
-                defaultValue: "",
+
+    const onOpenEditDialogChange = (event: React.MouseEvent | React.KeyboardEvent | MouseEvent, data: { open: boolean }) => {
+        setEditDialogOpen(data.open);
+    }
+
+    const classes = accountTabStyles();
+
+    const editAccount: CustomTableAction<Account> = {
+        name: "Edit",
+        icon: <Edit24Filled/>,
+        onClick: (account: Account) => {
+            setAccountForEdit(account);
+            setEditDialogOpen(true);
+            console.log(account);
+        }
+    }
+    const menuActions: CustomTableAction<Account>[] = [
+        {
+            name: "Refill",
+            icon: <ArrowDownload24Filled/>,
+            onClick: (account: Account) => {
+                console.log(account);
             }
-        ]
-    };
-    const columnDefinitions: TableColumnDefinition<Account>[] = [
-        createTableColumn<Account>({
-            columnId: "name",
-            compare: (a, b) => {
-                return a.name.localeCompare(b.name);
-            },
-        }),
-        createTableColumn<Account>({
-            columnId: "currency",
-            compare: (a, b) => {
-                return a.currency.localeCompare(b.currency);
-            },
-        }),
-        createTableColumn<Account>({
-            columnId: "personalMoney",
-            compare: (a, b) => {
-                return a.personalMoney - b.personalMoney;
-            },
-        }),
-        createTableColumn<Account>({
-            columnId: "creditLimit",
-            compare: (a, b) => {
-                if (a.creditLimit === null) {
-                    return -1;
-                }
-                if (b.creditLimit === null) {
-                    return 1;
-                }
-                return a.creditLimit - b.creditLimit;
-            },
-        }),
-        createTableColumn<Account>({
-            columnId: "totalBalance",
-            compare: (a, b) => {
-                return getTotalBalance(a) - getTotalBalance(b);
-            },
-        }),
-    ];
-
-    const {getRows, sort: { getSortDirection, toggleColumnSort, sort },} = useTableFeatures<Account>({columns: columnDefinitions, items: accounts},
-        [
-            useTableSort({
-                defaultSortState: { sortColumn: "name", sortDirection: "descending" },
-            }),
-        ]
-    );
-
-    const headerSortProps = (columnId: TableColumnId) => ({
-        onClick: (e: React.MouseEvent) => {
-            toggleColumnSort(e, columnId);
         },
-        sortDirection: getSortDirection(columnId),
-    });
+        {
+            name: "Withdraw",
+            icon: <ArrowExportUp24Filled/>,
+            onClick: (account: Account) => {
+                console.log(account);
+            }
+        },
+        {
+            name: "Delete",
+            icon: <Delete24Filled/>,
+            onClick: (account: Account) => {
+                deleteAccount(account.id.toString()).then(() => {
+                    loadAccounts();
+                });
+                sendGlobalToast("Account deleted", "success");
+            }
+        }
+        ];
 
     function onCreateSuccess() {
         setAddDialogOpen(false);
+        sendGlobalToast("Account created", "success");
+        loadAccounts();
+    }
+    function onEditSuccess() {
+        setEditDialogOpen(false);
+        sendGlobalToast("Account edited", "success");
         loadAccounts();
     }
 
@@ -137,7 +94,6 @@ export default function AccountsTab() {
         return accounts?.length !== 0 && accounts?.length !== undefined;
     }
 
-    const rows = sort(getRows());
 
     return (
         <>
@@ -146,53 +102,11 @@ export default function AccountsTab() {
             </Button>
             <div className={classes.tableWrapper}>
                 {showAccountTable() &&
-                    <Table sortable arial-label="Default table">
-                        <TableHeader>
-                            <TableRow>
-                                <TableHeaderCell {...headerSortProps("name")} key="name">
-                                    Name
-                                </TableHeaderCell>
-                                <TableHeaderCell {...headerSortProps("currency")} key="currency">
-                                    Currency
-                                </TableHeaderCell>
-                                <TableHeaderCell {...headerSortProps("personalMoney")} key="personalMoney">
-                                    Personal money
-                                </TableHeaderCell>
-                                <TableHeaderCell {...headerSortProps("creditLimit")} key="creditLimit">
-                                    Credit limit
-                                </TableHeaderCell>
-                                <TableHeaderCell {...headerSortProps("totalBalance")} key="totalBalance">
-                                    Total balance
-                                </TableHeaderCell>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {rows.map(({item}) => (
-                                <TableRow key={item.id}>
-                                    <TableCell>
-                                        {item.name}
-                                    </TableCell>
-                                    <TableCell>
-                                        {item.currency}
-                                    </TableCell>
-                                    <TableCell>
-                                        {item.personalMoney}
-                                    </TableCell>
-                                    <TableCell>
-                                        {item.creditLimit || "-"}
-                                    </TableCell>
-                                    <TableCell>
-                                        {getTotalBalance(item)}
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                    <CustomTable entities={accounts} rowsDefinition={accountRowsDefinition} action={editAccount} actionsOnMenu={menuActions}/>
                 }
             </div>
-            <AddNewEntityDialog open={addDialogOpen} onOpenChange={(event, data) => {
-                setAddDialogOpen(data.open);
-            }} entity={entityAccount} onSuccess={onCreateSuccess}/>
+            <AddNewEntityDialog open={addDialogOpen} onOpenChange={onOpenAddDialogChange} entityDefinition={entityAccountDefinition} onSuccess={onCreateSuccess}/>
+            <EditEntityDialog open={editDialogOpen} onOpenChange={onOpenEditDialogChange} entityDefinition={entityAccountDefinition} onSuccess={onEditSuccess} entity={accountForEdit}/>
         </>
     );
 }

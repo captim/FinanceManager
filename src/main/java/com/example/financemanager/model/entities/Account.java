@@ -42,4 +42,16 @@ public class Account {
 
     @Column(name = "credit_limit")
     private Double creditLimit;
+
+
+    @Column(name = "is_archived")
+    private boolean archived;
+
+    public boolean isArchived() {
+        return archived;
+    }
+
+    public void setArchived(boolean archived) {
+        this.archived = archived;
+    }
 }

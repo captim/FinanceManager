@@ -36,4 +36,7 @@ public class User {
     @Column(name = "source")
     @Enumerated(EnumType.STRING)
     private RegistrationSource source;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST)
+    private List<Account> accounts;
 }

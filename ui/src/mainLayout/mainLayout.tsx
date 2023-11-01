@@ -8,17 +8,27 @@ import SettingsTab from "../tabs/settingsTab/settingsTab";
 import AccountsTab from "../tabs/accountsTab/accountsTab";
 import AnalysisTab from "../tabs/analysisTab/analysisTab";
 import {SelectTabEventHandler} from "@fluentui/react-tabs";
-import {mainLayoutStyles} from './mainLayoutStyles';
+import {mainLayoutStyles, TABS_HEIGHT} from './mainLayoutStyles';
 import Slide from "../tabs/slide/slide";
-import {fillStorage, getCurrentUser} from "../storage/storage";
+import {fillStorage} from "../storage/storage";
 
 
 export default function MainLayout() {
     const classes = mainLayoutStyles();
-    const tabHeight = 800;
+
+    const toasterId = useId("toaster");
+    const { dispatchToast } = useToastController(toasterId);
+    const sendGlobalToast = (message: any, intent: any) =>
+        dispatchToast(
+            <Toast>
+                <ToastTitle>{message}</ToastTitle>
+            </Toast>,
+            { intent: intent }
+        );
+
     const tabs = [
         {name: "Start", value: "start", component: <Slide title={"Welcome to the Finance Manager!"}><StartTab/></Slide>, showInNavigation: false},
-        {name: "Accounts", value: "accounts", component: <Slide title={"Accounts"}><AccountsTab/></Slide>, showInNavigation: true},
+        {name: "Accounts", value: "accounts", component: <Slide title={"Accounts"}><AccountsTab sendGlobalToast={sendGlobalToast}/></Slide>, showInNavigation: true},
         {name: "Income", value: "income", component: <Slide title={"Income"}><IncomeTab/></Slide>, showInNavigation: true},
         {name: "Outcome", value: "outcome", component: <Slide title={"Outcome"}><OutcomeTab/></Slide>, showInNavigation: true},
         {name: "Budget", value: "budget", component: <Slide title={"Budget"}><BudgetTab/></Slide>, showInNavigation: true},
@@ -28,6 +38,8 @@ export default function MainLayout() {
     const [activeTab, setActiveTab] = useState("start");
     const [lastActiveTab, setLastActiveTab] = useState("start");
     const [contextIsLoaded, setContextIsLoaded] = useState(false);
+
+
     const onTabSelect: SelectTabEventHandler = (e, data) => {
         const tab = data?.value?.toString() || "start";
         goToActiveTab(tab);
@@ -48,9 +60,9 @@ export default function MainLayout() {
 
     const getTabPosition = (index: number) => {
         if (index > getIndexOfActiveTab()) {
-            return tabHeight;
+            return TABS_HEIGHT;
         } else if (index < getIndexOfActiveTab()) {
-            return -tabHeight;
+            return '-' + TABS_HEIGHT;
         } else {
             return 0;
         }
@@ -86,6 +98,7 @@ export default function MainLayout() {
                         </div>
                     ))}
                 </div>
+                <Toaster inline toasterId={toasterId} position="top-end" />
             </div>
         </div>
     );

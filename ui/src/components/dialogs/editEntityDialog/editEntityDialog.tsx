@@ -10,47 +10,20 @@ import {
     DialogTrigger, Input, Label, Select,
     Toast, Toaster, ToastTitle, useId, useToastController
 } from "@fluentui/react-components";
-import {Add24Regular} from "@fluentui/react-icons/lib/fonts";
-import {addNewEntityDialogStyles} from "./addNewEntityDialogStyles";
+import {Edit24Regular} from "@fluentui/react-icons/lib/fonts";
+import {dialogStyles} from "../dialogStyles";
+import {EntityDefinition, EntityDefinitionProperty} from "../../../entityDescriptions/entityDescription";
+import {getTypeOfInputByType, validateProperty} from "../dialogUtils";
 
-interface EntityProperty {
-    displayedName: string;
-    name: string;
-    type: string;
-    required?: boolean;
-    defaultValue?: string;
-    description?: string;
-    options?: string[];
-}
-interface Entity {
-    name: string;
-    properties: EntityProperty[];
-}
-interface AddNewEntityDialogProps {
+interface EditEntityDialogProps {
     open: boolean;
     onOpenChange: DialogOpenChangeEventHandler;
-    entity: Entity;
+    entityDefinition: EntityDefinition;
     onSuccess?: () => void;
-}
-const getTypeOfInputByType = (type: string) => {
-    switch (type) {
-        case "string":
-        case "integer":
-        case "float":
-            return "text";
-        case "date":
-            return "date";
-        case "boolean":
-            return "checkbox";
-        case "options":
-            return "options";
-        default:
-            return "text";
-    }
+    entity: any;
 }
 
-
-export default function AddNewEntityDialog({open, onOpenChange, entity, onSuccess}: AddNewEntityDialogProps) {
+export default function EditEntityDialog({open, onOpenChange, entityDefinition, onSuccess, entity}: EditEntityDialogProps) {
 
     const toasterId = useId("toaster");
     const {dispatchToast} = useToastController(toasterId);
@@ -62,34 +35,12 @@ export default function AddNewEntityDialog({open, onOpenChange, entity, onSucces
             {intent: "warning"}
         );
 
-    const validateProperty = (property: EntityProperty, value: string) => {
-        if (property.required && value === "") {
-            return `${property.displayedName} is required`;
-        }
-        else if (property.type === "integer" && !validateByType(property.type, value)) {
-            return `${property.displayedName} should be integer`;
-        }
-        else if (property.type === "float" && !validateByType(property.type, value)) {
-            return `${property.displayedName} should be float`;
-        }
-        return "";
-    }
-    const validateByType = (type: string, value: string) => {
-        switch (type) {
-            case "integer":
-                return Number.isInteger(Number(value));
-            case "float":
-                return !isNaN(Number(value));
-            default:
-                return "";
-        }
-    }
-    const validateAndPost = () => {
-        let form = document.getElementById(`addNew${entity.name}Dialog`) as HTMLFormElement;
+    const validateAndPut = () => {
+        let form = document.getElementById(`editNew${entityDefinition.name}Dialog`) as HTMLFormElement;
         let formData = new FormData(form);
-        let data: any = {};
+        let data: any = {id: entity.id};
         formData.forEach((value, key) => {
-            let property = entity.properties.find(property => property.name === key);
+            let property = entityDefinition.properties.find(property => property.name === key);
             if (property) {
                 let validationResult = validateProperty(property, value as string)
                 if (validationResult !== "") {
@@ -103,8 +54,8 @@ export default function AddNewEntityDialog({open, onOpenChange, entity, onSucces
                 data[key] = value;
             }
         });
-        fetch(`/api/${entity.name.toLowerCase()}`, {
-            method: 'POST',
+        fetch(`/api/${entityDefinition.name.toLowerCase()}`, {
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -117,16 +68,19 @@ export default function AddNewEntityDialog({open, onOpenChange, entity, onSucces
             }
         });
     }
-    const classes = addNewEntityDialogStyles();
+    const classes = dialogStyles();
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogSurface>
                 <DialogBody>
-                    <DialogTitle>Add new {entity.name}</DialogTitle>
+                    <DialogTitle>Edit {entityDefinition.name}</DialogTitle>
                     <DialogContent >
-                        <form id={`addNew${entity.name}Dialog`}>
+                        <form id={`editNew${entityDefinition.name}Dialog`}>
                             <table>
-                                {entity.properties?.map((property, index) => {
+                                {entityDefinition.properties?.map((property, index) => {
+                                    if (!property.editable) {
+                                        return;
+                                    }
                                     let typeOfInput = getTypeOfInputByType(property.type);
                                     return (
                                         <tr key={index} className={classes.tableRow}>
@@ -135,7 +89,7 @@ export default function AddNewEntityDialog({open, onOpenChange, entity, onSucces
                                             </td>
                                             <td>
                                                 {typeOfInput === "options" &&
-                                                    <Select name={property.name}>
+                                                    <Select defaultValue={entity?.[property.name]} name={property.name}>
                                                         {property.options?.map((option, index) => {
                                                             return (
                                                                 <option key={index} value={option}>{option}</option>
@@ -144,7 +98,7 @@ export default function AddNewEntityDialog({open, onOpenChange, entity, onSucces
                                                     </Select>
                                                 }
                                                 {typeOfInput === "text" &&
-                                                    <Input type={typeOfInput as 'text' | 'date' } name={property.name}/>
+                                                    <Input type={typeOfInput as 'text' | 'date' } name={property.name} defaultValue={entity?.[property.name]}/>
                                                 }
                                             </td>
                                         </tr>
@@ -159,7 +113,7 @@ export default function AddNewEntityDialog({open, onOpenChange, entity, onSucces
                         <DialogTrigger disableButtonEnhancement>
                             <Button appearance="secondary">Close</Button>
                         </DialogTrigger>
-                        <Button appearance="primary" icon={<Add24Regular/>} onClick={validateAndPost}>Add</Button>
+                        <Button appearance="primary" icon={<Edit24Regular/>} onClick={validateAndPut}>Edit</Button>
                     </DialogActions>
                 </DialogBody>
             </DialogSurface>

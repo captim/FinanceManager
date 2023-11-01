@@ -32,4 +32,18 @@ public class AccountServiceImpl implements AccountService {
         User user = userService.getCurrentUser().orElseThrow(() -> new RuntimeException("User not found"));
         return accountRepository.findAllByUser(user);
     }
+
+    @Override
+    public void deleteAccount(Long id) {
+        accountRepository.deleteById(id);
+    }
+
+    @Override
+    public void updateAccount(Account account) {
+        Account accountToUpdate = accountRepository.findById(account.getId()).orElseThrow(() -> new RuntimeException("Account not found"));
+        accountToUpdate.setName(account.getName());
+        accountToUpdate.setCreditLimit(account.getCreditLimit());
+        accountToUpdate.setPersonalMoney(account.getPersonalMoney());
+        accountRepository.save(accountToUpdate);
+    }
 }

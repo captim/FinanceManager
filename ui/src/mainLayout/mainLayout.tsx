@@ -1,9 +1,19 @@
-import React, {useLayoutEffect, useState} from 'react';
-import {Tab, TabList, Text, Toast, Toaster, ToastTitle, useId, useToastController} from "@fluentui/react-components";
+import React, {useLayoutEffect, useRef, useState} from 'react';
+import {
+    Button,
+    Tab,
+    TabList,
+    Text,
+    Toast,
+    Toaster,
+    ToastTitle,
+    useId,
+    useToastController
+} from "@fluentui/react-components";
 import StartTab from "../tabs/startTab/startTab";
 import IncomeTab from "../tabs/incomeTab/incomeTab";
 import OutcomeTab from "../tabs/outcomeTab/outcomeTab";
-import BudgetTab from "../tabs/budgetTab/budgetTab";
+import {BudgetTab} from "../tabs/budgetTab/budgetTab";
 import SettingsTab from "../tabs/settingsTab/settingsTab";
 import AccountsTab from "../tabs/accountsTab/accountsTab";
 import AnalysisTab from "../tabs/analysisTab/analysisTab";
@@ -25,7 +35,15 @@ export default function MainLayout() {
             </Toast>,
             { intent: intent }
         );
-
+    const someElement = useRef(null);
+    const scrolling = () => {
+        let container = document.getElementById("container");
+        if (container) {
+            console.log("container.scrollTop: " + container.scrollTop);
+            console.log("container.scrollHeight: " + container.scrollHeight);
+            console.log("someElement.current.scrollTop: " + someElement.current);
+        }
+    }
     const tabs = [
         {name: "Start", value: "start", component: <Slide title={"Welcome to the Finance Manager!"}><StartTab/></Slide>, showInNavigation: false},
         {name: "Accounts", value: "accounts", component: <Slide title={"Accounts"}><AccountsTab sendGlobalToast={sendGlobalToast}/></Slide>, showInNavigation: true},
@@ -38,7 +56,6 @@ export default function MainLayout() {
     const [activeTab, setActiveTab] = useState("start");
     const [lastActiveTab, setLastActiveTab] = useState("start");
     const [contextIsLoaded, setContextIsLoaded] = useState(false);
-
 
     const onTabSelect: SelectTabEventHandler = (e, data) => {
         const tab = data?.value?.toString() || "start";
